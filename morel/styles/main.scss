@@ -1,0 +1,33 @@
+// Main SCSS for Comic Gator.
+// Most styles sources from tachyons.min.css, this is just for tweaks
+
+.permanent-marker { font-family: 'Permanent Marker', cursive; }
+
+.transform-scale { transform: scale(1.5);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+.mw2-5 { max-width: 2.5rem; }
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+::-moz-selection {
+    background: #fe57a1;
+    color: #fff;
+    text-shadow: none;
+}
+::selection {
+    background: #fe57a1;
+    color: #fff;
+    text-shadow: none;
+}
