@@ -15,18 +15,7 @@ main =
 
 
 type alias CGForm =
-    { email : String
-    , isLatest : Bool
-    , isReplay : Bool
-    , mark : String
-    , step : String
-    , isValid : Bool
-    }
-
-
-initCGForm : CGForm
-initCGForm =
-    CGForm "" False False "" "" False
+    {}
 
 
 type alias Comic =
@@ -36,21 +25,25 @@ type alias Comic =
     }
 
 
-initComics =
-    [ Comic "1" "xkcd" 4356
-    , Comic "2" "Saturday Morning Breakfast Cereal" 7694
-    ]
+comics : List Comic
+comics =
+    [ Comic "1" "xkcd" 4356, Comic "2" "Saturday Morning Breakfast Cereal" 7694 ]
 
 
 type alias Model =
-    { form : CGForm
+    { email : String
+    , isLatest : Bool
+    , isReplay : Bool
+    , mark : String
+    , step : String
+    , isFormValid : Bool
     , comics : List Comic
     }
 
 
 model : Model
 model =
-    Model initCGForm initComics
+    Model "" False False "" "" False comics
 
 
 
@@ -63,30 +56,17 @@ type Msg
     | Step String
     | ToggleLatest
     | ToggleReplay
+    | Validate
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Email email ->
-            let
-                oldForm =
-                    model.form
-
-                newForm =
-                    { oldForm | email = email }
-            in
-                { model | form = newForm }
+            { model | email = email }
 
         ToggleLatest ->
-            let
-                oldForm =
-                    model.form
-
-                newForm =
-                    { oldForm | isLatest = not oldForm.isLatest }
-            in
-                { model | form = newForm }
+            { model | isLatest = not model.isLatest }
 
         ToggleReplay ->
             { model | isReplay = not model.isReplay }
@@ -96,6 +76,9 @@ update msg model =
 
         Step step ->
             { model | step = step }
+
+        Validate ->
+            model
 
 
 
