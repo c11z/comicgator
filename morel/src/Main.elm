@@ -20,7 +20,13 @@ type alias CGForm =
     , isReplay : Bool
     , mark : String
     , step : String
+    , isValid : Bool
     }
+
+
+initCGForm : CGForm
+initCGForm =
+    CGForm "" False False "" "" False
 
 
 type alias Comic =
@@ -30,18 +36,21 @@ type alias Comic =
     }
 
 
+initComics =
+    [ Comic "1" "xkcd" 4356
+    , Comic "2" "Saturday Morning Breakfast Cereal" 7694
+    ]
+
+
 type alias Model =
-    { email : String
-    , isLatest : Bool
-    , isReplay : Bool
-    , mark : String
-    , step : String
+    { form : CGForm
+    , comics : List Comic
     }
 
 
 model : Model
 model =
-    Model "" False False "" ""
+    Model initCGForm initComics
 
 
 
@@ -60,10 +69,24 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         Email email ->
-            { model | email = email }
+            let
+                oldForm =
+                    model.form
+
+                newForm =
+                    { oldForm | email = email }
+            in
+                { model | form = newForm }
 
         ToggleLatest ->
-            { model | isLatest = not model.isLatest }
+            let
+                oldForm =
+                    model.form
+
+                newForm =
+                    { oldForm | isLatest = not oldForm.isLatest }
+            in
+                { model | form = newForm }
 
         ToggleReplay ->
             { model | isReplay = not model.isReplay }
@@ -83,9 +106,12 @@ view : Model -> Html Msg
 view model =
     main_
         [ Attr.class "mw6 mw7-ns center pa2 ph5-ns f4 f3-ns" ]
-        [ img
+        [ div
+            [ Attr.class "relative f7 f6-ns sans-serif pv2 bg-washed-red tc hidden" ]
+            [ text "Invalid input" ]
+        , img
             [ Attr.src "images/cg_logo.svg"
-            , Attr.class "pb2 pb3-ns"
+            , Attr.class "pb2 pb3-ns neg-mt2"
             , Attr.title "alligator: metal AF"
             ]
             []
