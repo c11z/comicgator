@@ -2,4 +2,7 @@ elm-stuff
 elm.js
 /build/*
 /bin/*
+/dist/*
+node_modules
+package-lock.json
 .vscode
