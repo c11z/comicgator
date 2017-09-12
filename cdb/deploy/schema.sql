@@ -1,0 +1,8 @@
+-- Deploy appschema
+
+BEGIN;
+
+CREATE SCHEMA IF NOT EXISTS cg;
+GRANT USAGE ON SCHEMA cg TO mrcg;
+
+COMMIT;

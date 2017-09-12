@@ -1,0 +1,17 @@
+%syntax-version=1.0.0
+%project=cdb
+%uri=https://github.com/c11z/comicgator/
+
+schema 2015-02-19T18:28:10Z Cory Dominguez <mr@comicgator.com> # Create schema cg, short for comicgator.
+generate_object_id 2015-02-19T18:32:10Z Cory Dominguez <mr@comicgator.com> # Function for generating bson object ids.
+comic_table [schema] 2015-02-19T18:49:33Z Cory Dominguez <mr@comicgator.com> # Table for comic data.
+geek_table [schema] 2015-02-20T00:39:50Z Cory Dominguez <mr@comicgator.com> # Table containing user data, affectionately referred to as geeks.
+strip_table [schema comic_table] 2015-02-20T00:54:32Z Cory Dominguez <mr@comicgator.com> # Table for storing comic strip data.
+comic_geek_table [schema comic_table geek_table] 2015-02-20T21:12:10Z Cory Dominguez <mr@comicgator.com> # Junction table tracking the interaction between geeks and comics.
+strip_geek_table [schema strip_table geek_table] 2015-02-20T21:12:21Z Cory Dominguez <mr@comicgator.com> # Junction table tracking the interaction between geeks and strips.
+verification_table [geek_table] 2016-09-01T20:32:47Z Cory Dominguez <mr@comicgator.com> # Table for tracking verification codes on geek sign in
+session_geek_table [geek_table] 2016-09-01T20:33:24Z Cory Dominguez <mr@comicgator.com> # Table for tracking geek sessions
+feed_table [geek_table] 2016-11-08T05:13:05Z Cory Dominguez <mr@comicgator.com> # RSS feed
+feed_comic_table [feed_table comic_table] 2016-11-08T05:20:06Z Cory Dominguez <mr@comicgator.com> # Comics associated with a feed
+feed_strip_table [feed_table strip_table] 2016-11-08T05:25:27Z Cory Dominguez <mr@comicgator.com> # Strips in a feed
+update_timestamp_trigger [comic_table geek_table strip_table comic_geek_table strip_geek_table feed_table feed_comic_table feed_strip_table] 2015-02-20T23:51:53Z Cory Dominguez <mr@comicgator.com> # Function and triggers for updating updated_at timestamp automatically.

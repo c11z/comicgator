@@ -1,0 +1,19 @@
+[core]
+	engine = pg
+	plan_file = sqitch.plan
+	top_dir = .
+	deploy_dir = deploy
+	revert_dir = revert
+	verify_dir = verify
+	extension = sql
+[target "dev"]
+	uri = db:pg://mrcg:mrcg@localhost:5432/cdb
+[engine "pg"]
+	target = cdb
+[deploy]
+	verify = true
+[rebase]
+	verify = true
+[user]
+      name = Cory Dominguez
+      email = mr@comicgator.com
