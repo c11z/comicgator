@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "comics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "comic_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$"
+          },
+          "is_latest": {
+            "type": "boolean"
+          },
+          "cron": {
+            "type": "string, null"
+          },
+          "mark": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "step": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+          }
+        },
+        "required": [
+          "comic_id",
+          "is_latest"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "name",
+    "comics"
+  ],
+  "additionalProperties": false
+}

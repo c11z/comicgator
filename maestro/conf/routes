@@ -1,0 +1,43 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# HomePage
+GET     /                               controllers.StatusController.health
+GET     /health                         controllers.StatusController.health
+
+# Access
+POST    /start                          controllers.AccessController.start
+GET     /verify                         controllers.AccessController.verify(email: String, verification_code: String)
+
+
+# Lurker
+GET     /lurk                           controllers.LurkerController.full(comic_ids: Option[Vector[org.bson.types.ObjectId]], is_delta: Boolean ?= true)
+
+# LineCook
+GET     /linecook/replay                controllers.LineCookController.replay
+GET     /linecook/latest                controllers.LineCookController.latest
+
+# Comics
+GET     /comics                         controllers.ComicController.getAll
+GET     /comics/:comicId                controllers.ComicController.getOne(comicId: org.bson.types.ObjectId)
+
+# Strips
+GET     /comics/:comicId/strips         controllers.StripController.getAll(comicId: org.bson.types.ObjectId)
+GET     /strips/:stripId                controllers.StripController.getOne(stripId: org.bson.types.ObjectId)
+
+# Geeks
+PUT     /geeks/stars/comics/:comicId    controllers.GeekController.starComic(comicId: org.bson.types.ObjectId)
+PUT     /geeks/stars/strips/:stripId    controllers.GeekController.starStrip(stripId: org.bson.types.ObjectId)
+PUT     /geeks/views/strips/:stripId    controllers.GeekController.viewStrip(stripId: org.bson.types.ObjectId)
+GET     /geeks/:geekId                  controllers.GeekController.getOne(geekId: org.bson.types.ObjectId)
+PUT     /geeks                          controllers.GeekController.put
+
+# Feeds
+GET     /feeds                          controllers.FeedController.getAll
+POST    /feeds                          controllers.FeedController.post
+PUT     /feeds/:feedId                  controllers.FeedController.put(feedId: org.bson.types.ObjectId)
+DELETE  /feeds/:feedId                  controllers.FeedController.delete(feedId: org.bson.types.ObjectId)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

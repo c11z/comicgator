@@ -1,0 +1,11 @@
+logs
+target
+comicgator.paw
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+docker-compose.yaml
+ubuntu-xenial-16.04-cloudimg-console.log
