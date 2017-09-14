@@ -2,6 +2,7 @@ REPO = c11z/sqitch
 TAG_LATEST = $(REPO)
 TAG_POSTGRES = $(REPO):postgres
 TAG_POSTGRES_SH = $(REPO):postgres-sh
+TARGET_POSTGRES = postgres:9.6
 
 .PHONY: build
 build: build-latest build-postgres build-postgres-sh
@@ -18,6 +19,9 @@ build-postgres:
 build-postgres-sh:
 	docker build --tag $(TAG_POSTGRES_SH) postgres-sh
 
+.PHONY: run
+run: cdb sleep-10 sqitch-deploy
+
 .PHONY: cdb
 cdb:
 	docker run --rm \
@@ -28,7 +32,11 @@ cdb:
     --env POSTGRES_PASSWORD=mrcg \
     --env POSTGRES_DB=cdb \
     --env PGDATA=/var/lib/postgresql/data \
-	postgres:9.6
+	$(TARGET_POSTGRES)
+
+.PHONY: sleep-10
+sleep-10:
+	sleep 10
 
 .PHONY: sqitch
 sqitch:
@@ -37,11 +45,23 @@ sqitch:
 	--tty \
     --link cdb \
     --volume $$PWD:/src \
-    c11z/sqitch:postgres-sh /bin/sh
+    $(TAG_POSTGRES_SH) /bin/sh
+
+.PHONY: sqitch-deploy
+sqitch-deploy:
+	docker run --rm \
+    --link cdb \
+    --volume $$PWD:/src \
+    $(TAG_POSTGRES) deploy
 
 .PHONY: psql
 psql:
-	PGOPTIONS=--search_path=cg psql --host localhost --port 5432 --username mrcg --dbname cdb
+	PGOPTIONS=--search_path=cg \
+	psql \
+	--host localhost \
+	--port 5432 \
+	--username mrcg \
+	--dbname cdb
 
 # .PHONY: push
 # push: push-latest push-postgres push-postgres-sh
