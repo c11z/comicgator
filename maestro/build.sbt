@@ -14,6 +14,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala).enablePlugins(Do
 
 // Docker settings from Native Packager
 
+dockerRepository := Some("comicgator")
+
 dockerExposedPorts ++= Seq(9000)
 
 dockerUpdateLatest := true
@@ -31,7 +33,7 @@ libraryDependencies ++= Seq(
 )
 
 resolvers ++= Seq(
-  "emueller-bintray" at "http://dl.bintray.com/emueller/maven",
+  "emueller-bintray" at "http://dl.bintray.com/emueller/maven"
 )
 
 RoutesKeys.routesImport += "binders.Binders._"
