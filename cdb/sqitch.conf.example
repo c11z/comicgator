@@ -7,9 +7,9 @@
 	verify_dir = verify
 	extension = sql
 [target "dev"]
-	uri = db:pg://mrcg:mrcg@localhost:5432/cdb
+	uri = db:pg://mrcg:mrcg@cdb:5432/cdb
 [engine "pg"]
-	target = cdb
+	target = dev
 [deploy]
 	verify = true
 [rebase]
