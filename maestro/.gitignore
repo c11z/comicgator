@@ -1,6 +1,6 @@
 logs
 target
-comicgator.paw
+.localenv
 /.idea
 /.idea_modules
 /.classpath
@@ -8,4 +8,3 @@ comicgator.paw
 /.settings
 /RUNNING_PID
 docker-compose.yaml
-ubuntu-xenial-16.04-cloudimg-console.log

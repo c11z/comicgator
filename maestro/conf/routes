@@ -23,21 +23,21 @@ GET     /comics                         controllers.ComicController.getAll
 GET     /comics/:comicId                controllers.ComicController.getOne(comicId: org.bson.types.ObjectId)
 
 # Strips
-GET     /comics/:comicId/strips         controllers.StripController.getAll(comicId: org.bson.types.ObjectId)
-GET     /strips/:stripId                controllers.StripController.getOne(stripId: org.bson.types.ObjectId)
+# GET     /comics/:comicId/strips         controllers.StripController.getAll(comicId: org.bson.types.ObjectId)
+# GET     /strips/:stripId                controllers.StripController.getOne(stripId: org.bson.types.ObjectId)
 
 # Geeks
-PUT     /geeks/stars/comics/:comicId    controllers.GeekController.starComic(comicId: org.bson.types.ObjectId)
-PUT     /geeks/stars/strips/:stripId    controllers.GeekController.starStrip(stripId: org.bson.types.ObjectId)
-PUT     /geeks/views/strips/:stripId    controllers.GeekController.viewStrip(stripId: org.bson.types.ObjectId)
-GET     /geeks/:geekId                  controllers.GeekController.getOne(geekId: org.bson.types.ObjectId)
-PUT     /geeks                          controllers.GeekController.put
+# PUT     /geeks/stars/comics/:comicId    controllers.GeekController.starComic(comicId: org.bson.types.ObjectId)
+# PUT     /geeks/stars/strips/:stripId    controllers.GeekController.starStrip(stripId: org.bson.types.ObjectId)
+# PUT     /geeks/views/strips/:stripId    controllers.GeekController.viewStrip(stripId: org.bson.types.ObjectId)
+# GET     /geeks/:geekId                  controllers.GeekController.getOne(geekId: org.bson.types.ObjectId)
+# PUT     /geeks                          controllers.GeekController.put
 
 # Feeds
-GET     /feeds                          controllers.FeedController.getAll
+# GET     /feeds                          controllers.FeedController.getAll
 POST    /feeds                          controllers.FeedController.post
-PUT     /feeds/:feedId                  controllers.FeedController.put(feedId: org.bson.types.ObjectId)
-DELETE  /feeds/:feedId                  controllers.FeedController.delete(feedId: org.bson.types.ObjectId)
+# PUT     /feeds/:feedId                  controllers.FeedController.put(feedId: org.bson.types.ObjectId)
+# DELETE  /feeds/:feedId                  controllers.FeedController.delete(feedId: org.bson.types.ObjectId)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+# GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
