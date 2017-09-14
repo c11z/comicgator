@@ -2,12 +2,10 @@ version: '2'
 services:
   maestro:
     container_name: maestro
-    image: comicgator/maestro:dev
+    image: comicgator/maestro:latest
     ports:
       - "9000:9000"
       - "5005:5005"
-    volumes:
-      - ./maestro:/home/c11z/maestro
     environment:
       - APPLICATION_SECRET=8Vz>klF16_mNUwYN1Mr@e^=vL37Ydj/kRT^808y18TCNm5DoY<wdz_hb9C[SKV<B
       - COMIC_GATOR_HOSTNAME=http://localhost:9000
@@ -16,12 +14,13 @@ services:
       - DATABASE_PASSWORD=mrcg
       - MAILGUN_DOMAIN=sandboxf3add8e069384dc5853ed751ba714836.mailgun.org
       - MAILGUN_API_KEY=key-902d3c26c20740199daea1819693a071
-    tty: true
+      - IS_LURKER=false
+      - IS_LINE_COOK=false
     links:
       - cdb
   cdb:
     container_name: cdb
-    image: postgres:9.5
+    image: postgres:9.6
     ports:
       - "5432:5432"
     environment:
@@ -29,14 +28,11 @@ services:
       - POSTGRES_PASSWORD=mrcg
       - POSTGRES_DB=cdb
       - PGDATA=/var/lib/postgresql/data
-  lunchtime:
-    container_name: lunchtime
-    image: comicgator/lunchtime:dev
+  morel:
+    container_name: morel
+    image: comicgator/morel:latest
     ports:
-      - "3000:3000"
-    volumes:
-      - ./lunchtime:/home/c11z/lunchtime
-    tty: true
+      - "8000:8000"
     environment:
-      - REACT_APP_MAILGUN_PUBLIC_API_KEY=pubkey-c7126e4cab251d643298f658eae14a84
-      - REACT_APP_MAESTRO_HOST=http://localhost:9000
+      - MAILGUN_PUBLIC_API_KEY=pubkey-c7126e4cab251d643298f658eae14a84
+      - MAESTRO_HOST=http://localhost:9000
