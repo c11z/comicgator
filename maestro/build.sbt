@@ -14,7 +14,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala).enablePlugins(Do
 
 // Docker settings from Native Packager
 
-dockerRepository := Some("comicgator")
+dockerRepository := Some("us.gcr.io/comic-gator")
 
 dockerExposedPorts ++= Seq(9000)
 
