@@ -1,0 +1,174 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: morel
+  labels:
+    application: comic-gator
+    service: morel
+    role: client
+  namespace: default 
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    service: morel
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: morel
+  namespace: default 
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        application: comic-gator
+        service: morel
+        role: client
+    spec:
+      containers:
+        - image: us.gcr.io/comic-gator/morel:latest
+          imagePullPolicy: Always
+          name: morel
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1  
+              memory: 588M
+            requests:
+              cpu: 0.2
+              memory: 100M
+          env:
+            - name: COMIC_GATOR_API_HOST
+              value: http://api.comicgator.com
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: maestro
+  labels:
+    application: comic-gator
+    service: maestro
+    role: api
+  namespace: default 
+spec:
+  ports:
+    - name: api
+      port: 80
+      protocol: TCP
+      targetPort: 9000
+    - name: db
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    service: maestro
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: maestro
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        application: comic-gator
+        service: maestro
+        role: api
+    spec:
+      containers:
+        - image: us.gcr.io/comic-gator/maestro:latest
+          imagePullPolicy: Always
+          name: maestro
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1  
+              memory: 588M
+            requests:
+              cpu: 0.2
+              memory: 300M
+          env:
+            - name: APPLICATION_SECRET
+              value: 8Vz>klF16_mNUwYN1Mr@e^=vL37Ydj/kRT^808y18TCNm5DoY<wdz_hb9C[SKV<B
+            - name: COMIC_GATOR_HOSTNAME
+              value: http://api.comicgator.com
+            - name: DATABASE_URL
+              value: jdbc:postgresql://127.0.0.1:5432/cdb
+            - name: DATABASE_USER
+              value: mrcg
+            - name: DATABASE_PASSWORD
+              value: mrcg
+            - name: MAILGUN_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun-credentials
+                  key: domain
+            - name: MAILGUN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun-credentials
+                  key: key
+            - name: IS_LURKER
+              value: "false"
+            - name: IS_LINE_COOK
+              value: "false"
+            - name: JAVA_OPTIONS
+              value: "-Xmx300m"
+          volumeMounts:
+            - name: mailgun-credentials
+              mountPath: /etc/mailgun-credentials
+              readOnly: true
+        # [START postgres]
+        - image: postgres:9.6
+          imagePullPolicy: Always
+          name: cdb
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 1
+              memory: 588M
+            requests:
+              cpu: 0.2
+              memory: 500M
+          env:
+            - name: POSTGRES_USER
+              value: mrcg
+            - name: POSTGRES_PASSWORD
+              value: mrcg
+            - name: POSTGRES_DB
+              value: cdb
+            - name: PGDATA
+              value: /var/lib/postgresql/data
+        # [END postgres]
+      # [START volumes]
+      volumes:
+        - name: mailgun-credentials
+          secret:
+            secretName: mailgun-credentials
+      # [END volumes]
+      terminationGracePeriodSeconds: 30

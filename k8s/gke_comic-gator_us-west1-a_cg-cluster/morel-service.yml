@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: morel
+  labels:
+    application: comic-gator
+    service: morel
+    role: client
+  namespace: default 
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    service: morel
+  type: NodePort

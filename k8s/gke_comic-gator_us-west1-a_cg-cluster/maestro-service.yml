@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: maestro
+  labels:
+    application: comic-gator
+    service: maestro
+    role: api
+  namespace: default 
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    service: maestro
+  type: NodePort

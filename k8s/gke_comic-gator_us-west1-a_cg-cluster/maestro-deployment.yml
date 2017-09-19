@@ -1,0 +1,107 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: maestro
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        application: comic-gator
+        service: maestro
+        role: api
+    spec:
+      containers:
+        - image: us.gcr.io/comic-gator/maestro:latest
+          imagePullPolicy: Always
+          name: maestro
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          # resources:
+          #   limits:
+          #     cpu: 0.5
+          #     memory: 2000m
+          #   requests:
+          #     cpu: 100m
+          #     memory: 1000m
+          env:
+            - name: APPLICATION_SECRET
+              value: 8Vz>klF16_mNUwYN1Mr@e^=vL37Ydj/kRT^808y18TCNm5DoY<wdz_hb9C[SKV<B
+            - name: COMIC_GATOR_HOSTNAME
+              value: http://api.comicgator.com
+            - name: DATABASE_URL
+              value: jdbc:postgresql://127.0.0.1:5432/cdb
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-credentials
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-credentials
+                  key: password 
+            - name: MAILGUN_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun-credentials
+                  key: domain
+            - name: MAILGUN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun-credentials
+                  key: key
+            - name: IS_LURKER
+              value: "false"
+            - name: IS_LINE_COOK
+              value: "false"
+            - name: JAVA_OPTIONS
+              value: "-Xmx2g"
+          volumeMounts:
+            - name: mailgun-credentials
+              mountPath: /etc/mailgun-credentials
+              readOnly: true
+        # [START proxy_container]
+        - image: gcr.io/cloudsql-docker/gce-proxy:1.09
+          name: cloudsql-proxy
+          # resources:
+          #   limits:
+          #     cpu: 100m  
+          #     memory: 100m
+          #   requests:
+          #     cpu: 100m
+          #     memory: 100m
+          command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                    "-instances=comic-gator:us-west1:cdb=tcp:5432",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+            - name: cloudsql
+              mountPath: /cloudsql
+        # [END proxy_container]
+      # [START volumes]
+      volumes:
+        - name: mailgun-credentials
+          secret:
+            secretName: mailgun-credentials
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
+      # [END volumes]
+      terminationGracePeriodSeconds: 30
