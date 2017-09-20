@@ -1,0 +1,6 @@
+CDB_URL=jdbc:postgresql://localhost:5432/cdb
+CDB_USER=mrcg
+CDB_PASSWORD=mrcg
+MAILGUN_DOMAIN=
+MAILGUN_KEY=
+MAILGUN_PUBLIC_KEY=
