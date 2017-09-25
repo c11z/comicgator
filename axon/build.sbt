@@ -12,9 +12,8 @@ libraryDependencies ++= Seq(
   filters,
   "org.mongodb" % "bson" % "3.5.0",
   "com.eclipsesource" %% "play-json-schema-validator" % "0.9.4",
-  "com.typesafe.play" %% "play-slick" % "3.0.0"
-  // placeholder reference for lib directory
-  // postgresql-41.1.4.jar
+  "com.typesafe.play" %% "play-slick" % "3.0.0",
+  "org.postgresql" % "postgresql" % "42.1.4"
 )
 
 resolvers ++= Seq(
