@@ -117,7 +117,7 @@ class Repository()(implicit ex: ExecutionContext) {
   private val db: JdbcProfile#Backend#Database = dbConfig.db
   import profile.api._
 
-  def shutdown = db.close()
+  def shutdown(): Unit = db.close()
 
   def insertComic(comic: Comic): Future[Int] = {
     db.run(sql"""
@@ -250,7 +250,7 @@ object Main extends App with Conf with LazyLogging {
     }
 
   Await.result(comicInsertCount, Duration.Inf)
-  repo.shutdown
+  repo.shutdown()
   sys.exit(0)
 }
 
