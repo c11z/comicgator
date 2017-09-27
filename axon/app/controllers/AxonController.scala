@@ -31,14 +31,14 @@ class AxonController @Inject()(
   }
 
   def comics: Action[AnyContent] = Action.async { request =>
-    val result = db.run(sql"""
+    val query: Future[Option[JsValue]] = db.run(sql"""
       SELECT array_to_json(array_agg(row_to_json(comic_select))) AS comics FROM (
         SELECT
           c.id,
           c.hostname,
           c.title,
           c.creator,
-          sc.strip_count,
+          COALESCE(sc.strip_count, 0) AS strip_count,
           c.is_advertised,
           c.patreon_url,
           c.store_url,
@@ -52,7 +52,9 @@ class AxonController @Inject()(
             GROUP BY s.comic_id
           ) sc ON c.id = sc.comic_id
         ORDER BY c.id ASC
-      ) comic_select""".as[JsValue].head)
-    result.map(Ok(_))
+      ) comic_select""".as[JsValue].headOption)
+    query.map{ result =>
+      Ok(result.getOrElse(Json.arr()))
+    }
   }
 }

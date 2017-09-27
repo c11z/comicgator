@@ -1,0 +1,4 @@
+CDB_URL=jdbc:postgresql://localhost:5432/cdb
+CDB_USER=mrcg
+CDB_PASSWORD=mrcg
+ETL_BATCH_SIZE=10
