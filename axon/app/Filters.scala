@@ -4,10 +4,10 @@ import akka.stream.Materializer
 import play.api.Logger
 import play.api.http.{DefaultHttpFilters, EnabledFilters}
 import play.api.mvc.{Filter, RequestHeader, Result}
-import play.api.routing.{HandlerDef, Router}
+import play.api.routing.Router
 import play.filters.gzip.GzipFilter
-
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class LoggingFilter @Inject()(
     implicit val mat: Materializer,
@@ -20,8 +20,10 @@ class LoggingFilter @Inject()(
     val startTime = System.currentTimeMillis
 
     nextFilter(requestHeader).map { result =>
-      val handlerDef: HandlerDef = requestHeader.attrs(Router.Attrs.HandlerDef)
-      val action = handlerDef.controller + "." + handlerDef.method
+      val action: String = Try(requestHeader.attrs(Router.Attrs.HandlerDef)).toOption match {
+        case Some(handlerDef) => handlerDef.controller + "." + handlerDef.method
+        case None => "public"
+      }
       val endTime = System.currentTimeMillis
       val requestTime = endTime - startTime
 
