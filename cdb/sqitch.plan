@@ -15,3 +15,4 @@ feed_table [geek_table] 2016-11-08T05:13:05Z Cory Dominguez <mr@comicgator.com> 
 feed_comic_table [feed_table comic_table] 2016-11-08T05:20:06Z Cory Dominguez <mr@comicgator.com> # Comics associated with a feed
 feed_strip_table [feed_table strip_table] 2016-11-08T05:25:27Z Cory Dominguez <mr@comicgator.com> # Strips in a feed
 update_timestamp_trigger [comic_table geek_table strip_table comic_geek_table strip_geek_table feed_table feed_comic_table feed_strip_table] 2015-02-20T23:51:53Z Cory Dominguez <mr@comicgator.com> # Function and triggers for updating updated_at timestamp automatically.
+comic_strip_count_view [strip_table] 2017-09-28T22:28:05Z Cory Dominguez <mr@comicgator.com> # Materialized view for keeping track of how many strips each comic has.
