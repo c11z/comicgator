@@ -20,10 +20,12 @@ class LoggingFilter @Inject()(
     val startTime = System.currentTimeMillis
 
     nextFilter(requestHeader).map { result =>
-      val action: String = Try(requestHeader.attrs(Router.Attrs.HandlerDef)).toOption match {
-        case Some(handlerDef) => handlerDef.controller + "." + handlerDef.method
-        case None => "public"
-      }
+      val action: String =
+        Try(requestHeader.attrs(Router.Attrs.HandlerDef)).toOption match {
+          case Some(handlerDef) =>
+            handlerDef.controller + "." + handlerDef.method
+          case None => "public"
+        }
       val endTime = System.currentTimeMillis
       val requestTime = endTime - startTime
 
