@@ -258,8 +258,8 @@ class Repository()(implicit ex: ExecutionContext) {
    * Calls refresh on view that counts the number of strips each comic has.
    */
   def refreshComicStripCount: Future[Int] =
-    db.run(
-      sqlu"""REFRESH MATERIALIZED VIEW cg.comic_strip_count""").map(_ => 1)
+    db.run(sqlu"""REFRESH MATERIALIZED VIEW cg.comic_strip_count""")
+      .map(_ => 1)
 
   /*
    * Finds feed comics flagged as latest. For each feed comic finds the highest feed strip number, then inserts
@@ -398,13 +398,13 @@ object Lurker extends App with Conf with LazyLogging {
                       strategy: Strategy): Future[Vector[Scrap]] = Future {
     val driver = new HtmlUnitDriver()
 
-    /**
-      * A crawl closure to recurse on after the client is initialized.
-      * @param target String of the url currently targeted.
-      * @param count Int counter for associating numbers to the strips.
-      * @param scraps Collection of Scrap objects returned from the crawl.
-      * @return List of Scrap objects.
-      */
+    /*
+     * A crawl closure to recurse on after the client is initialized.
+     * @param target String of the url currently targeted.
+     * @param count Int counter for associating numbers to the strips.
+     * @param scraps Collection of Scrap objects returned from the crawl.
+     * @return List of Scrap objects.
+     */
     @tailrec
     def loop(target: Option[String],
              count: Int,
@@ -444,6 +444,14 @@ object Lurker extends App with Conf with LazyLogging {
                      strategy: Strategy): (Option[String], Scrap) = {
     logger.info(s"Scraping url: $url")
 
+    /*
+     * A closure that that generally apply xPath selectors to a WebElement
+     * and extract desired data defined by a partial function.
+     * @param selectorsO Optional Vector of xPath selectors
+     * @param htmlectomy Partial Function that takes a WebElement and extracts
+     *        Optional String information from it.
+     * @return
+     */
     def judge(selectorsO: Option[Vector[String]],
               htmlectomy: WebElement => Option[String]): Option[String] = {
       selectorsO match {
