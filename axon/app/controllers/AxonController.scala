@@ -33,7 +33,7 @@ class AxonController @Inject()(
   implicit val getObjectIdResult: GetResult[ObjectId] =
     GetResult(r => new ObjectId(r.nextString))
 
-  private val validator = new SchemaValidator()
+  private val validator = SchemaValidator()
   def health: Action[AnyContent] = Action {
     implicit request: Request[AnyContent] =>
       Ok(Json.obj("status" -> "ok", "tagline" -> "as in web COMIC aggreGATOR"))
@@ -45,13 +45,14 @@ class AxonController @Inject()(
    */
   def getAllComics: Action[AnyContent] = Action.async { request =>
     val query: Future[Option[JsValue]] = db.run(sql"""
-      SELECT array_to_json(array_agg(row_to_json(comic_select))) AS comics FROM (
+      SELECT array_to_json(array_agg(row_to_json(comic_select)))
+      AS comics FROM (
         SELECT
           c.id,
           c.hostname,
           c.title,
           c.creator,
-          csc.strip_count,
+          csc.strip_count
         FROM cg.comic c
           LEFT JOIN cg.comic_strip_count csc ON c.id = csc.comic_id
         ORDER BY c.id ASC
@@ -69,25 +70,29 @@ class AxonController @Inject()(
     * @param isReplay Boolean
     * @param mark Option Int
     * @param step Option Int
-    * @param startAt Option LocalTimeDate
     */
   case class Feed(email: String,
                   comicId: ObjectId,
                   isLatest: Boolean,
                   isReplay: Boolean,
                   mark: Option[Int],
-                  step: Option[Int],
-                  startAt: Option[LocalDateTime]) {
+                  step: Option[Int]) {
     // Mark indicates last successful strip, for initial run in order to
     // include the desired starting strip we subtract 1.
     val initialMark: Int = mark.getOrElse(1) - 1
-    // Default should be 8am on the day before it is created that way it will run soon.
-    val defaultStartAt: LocalDateTime = startAt.getOrElse(
-      LocalDateTime.now().minusDays(1).withHour(8).withMinute(0).withSecond(0))
+    // Default should be 8am on the day before it is created,
+    // that way it will run soon.
+    val startAt: LocalDateTime = LocalDateTime.now()
+    val nextAt: LocalDateTime = startAt
+      .minusDays(1)
+      .withHour(8)
+      .withMinute(0)
+      .withSecond(0)
   }
 
   object Feed {
-    implicit val objectIdReader: Reads[ObjectId] = JsPath.read[String].map(new ObjectId(_))
+    implicit val objectIdReader: Reads[ObjectId] =
+      JsPath.read[String].map(new ObjectId(_))
 
     implicit val feedReader: Reads[Feed] =
       ((JsPath \ "email").read[String] and
@@ -95,8 +100,7 @@ class AxonController @Inject()(
         (JsPath \ "is_latest").read[Boolean] and
         (JsPath \ "is_replay").read[Boolean] and
         (JsPath \ "mark").readNullable[Int] and
-        (JsPath \ "step").readNullable[Int] and
-        (JsPath \ "start_at").readNullable[LocalDateTime])(Feed.apply _)
+        (JsPath \ "step").readNullable[Int])(Feed.apply _)
   }
 
   private val feedSchema: SchemaType = Json
@@ -118,7 +122,7 @@ class AxonController @Inject()(
       |      "type": "boolean"
       |    },
       |    "mark": {
-      |      "type": "integer, null",
+      |      "type": "integer",
       |      "minimum": 1
       |    },
       |    "step": {
@@ -154,18 +158,18 @@ class AxonController @Inject()(
       valid = { feed =>
         val isReceptive = true
         (for {
-            geekId <- db.run(sql"""
+          geekId <- db.run(sql"""
               INSERT INTO cg.geek (email, is_receptive)
               VALUES (${feed.email}, $isReceptive::BOOLEAN)
               ON CONFLICT (email) DO
               UPDATE SET (email, is_receptive) =
               (${feed.email}, $isReceptive::BOOLEAN)
               RETURNING id""".as[ObjectId].head)
-            feedId <- db.run(sql"""
+          feedId <- db.run(sql"""
               INSERT INTO cg.feed (geek_id, name)
               VALUES (${geekId.toString}, 'Feed Name')
               RETURNING id""".as[ObjectId].head)
-            feedComicInsert <- db.run(sql"""
+          feedComicInsert <- db.run(sql"""
               INSERT INTO cg.feed_comic (
                 feed_id,
                 comic_id,
@@ -184,8 +188,8 @@ class AxonController @Inject()(
                 ${feed.initialMark},
                 ${feed.step.getOrElse(0)},
                 '1 day',
-                ${feed.defaultStartAt.format(ISO_DATE_TIME)},
-                ${feed.defaultStartAt.format(ISO_DATE_TIME)}
+                ${feed.startAt.format(ISO_DATE_TIME)}::TIMESTAMP,
+                ${feed.nextAt.format(ISO_DATE_TIME)}::TIMESTAMP
               )
               ON CONFLICT (feed_id, comic_id)
               DO UPDATE SET (
@@ -200,33 +204,18 @@ class AxonController @Inject()(
                 ${feed.initialMark},
                 ${feed.step.getOrElse(0)},
                 '1 day',
-                ${feed.defaultStartAt.format(ISO_DATE_TIME)},
-                ${feed.defaultStartAt.format(ISO_DATE_TIME)}
+                ${feed.startAt.format(ISO_DATE_TIME)}::TIMESTAMP,
+                ${feed.nextAt.format(ISO_DATE_TIME)}::TIMESTAMP
               )""".as[Int].head)
-        } yield feedId).map { feedId =>
-          NoContent
-            .withHeaders(("Location", s"http://localhost:9000/feeds/${feedId.toString}"))
+        } yield (feedId, feedComicInsert)).map {
+          case (feedId, feedComicInsert) =>
+            Logger.info(s"Inserted $feedComicInsert feed.")
+            NoContent
+              .withHeaders(
+                ("Feed-Location",
+                 s"http://localhost:9000/feeds/${feedId.toString}"))
         }
       }
     )
   }
-
-  def getOneFeed: Action[AnyContent] = Action.async { request =>
-    val query: Future[Option[JsValue]] = db.run(sql"""
-      SELECT array_to_json(array_agg(row_to_json(feed_select))) AS feeds FROM (
-        SELECT
-          c.id,
-          c.hostname,
-          c.title,
-          c.creator,
-          csc.strip_count,
-        FROM cg.comic c
-          LEFT JOIN cg.comic_strip_count csc ON c.id = csc.comic_id
-        ORDER BY c.id ASC
-      ) feed_select""".as[JsValue].headOption)
-    query.map { result =>
-      Ok(result.getOrElse(Json.arr()))
-    }
-  }
-
 }
