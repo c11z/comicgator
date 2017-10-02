@@ -6,7 +6,7 @@
 # An example controller showing a sample home page
 GET     /                           controllers.AxonController.health
 GET     /health                     controllers.AxonController.health
-GET     /comics                     controllers.AxonController.comics
+GET     /comics                     controllers.AxonController.getAllComics
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /favicon.ico                controllers.Assets.at(path="/public/images/", file="favicon.ico")

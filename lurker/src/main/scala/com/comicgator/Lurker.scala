@@ -133,11 +133,11 @@ class Repository()(implicit ex: ExecutionContext) {
 
   def shutdown(): Unit = db.close()
 
-  /**
-    * Inserts comic
-    * @param comic Comic
-    * @return
-    */
+  /*
+   * Inserts comic
+   * @param comic Comic
+   * @return
+   */
   def insertComic(comic: Comic): Future[Int] = {
     db.run(sql"""
       INSERT INTO cg.comic (
@@ -181,11 +181,11 @@ class Repository()(implicit ex: ExecutionContext) {
         ${comic.firstUrl})""".as[Int].head)
   }
 
-  /**
-    * Inserts comic strip
-    * @param strip Strip
-    * @return
-    */
+  /*
+   * Inserts comic strip
+   * @param strip Strip
+   * @return
+   */
   def insertStrip(strip: Strip): Future[Int] = {
     db.run(sql"""
       INSERT INTO cg.strip (
@@ -235,12 +235,12 @@ class Repository()(implicit ex: ExecutionContext) {
         ${strip.scrap.isSpecial.toString}::BOOLEAN)""".as[Int].head)
   }
 
-  /**
-    * Finds the most recent comic strip.
-    * @param comicId ObjectId
-    * @param firstUrl String, first strip url of the comic
-    * @return
-    */
+  /*
+   * Finds the most recent comic strip.
+   * @param comicId ObjectId
+   * @param firstUrl String, first strip url of the comic
+   * @return
+   */
   def lastStrip(comicId: ObjectId, firstUrl: String): Future[(String, Int)] = {
     db.run(
         sql"""
@@ -253,6 +253,78 @@ class Repository()(implicit ex: ExecutionContext) {
         case None => (firstUrl, 1)
       }
   }
+
+  /*
+   * Calls refresh on view that counts the number of strips each comic has.
+   */
+  def refreshComicStripCount: Future[Int] =
+    db.run(
+      sqlu"""REFRESH MATERIALIZED VIEW cg.comic_strip_count""").map(_ => 1)
+
+  /*
+   * Finds feed comics flagged as latest. For each feed comic finds the highest feed strip number, then inserts
+   * all strips that have a higher number.
+   */
+  def latestFeedStrip: Future[Int] = {
+    db.run(sqlu"""
+      DO $$$$
+      DECLARE
+        rec cg.feed_comic%ROWTYPE;
+      BEGIN
+        FOR rec IN EXECUTE 'SELECT * FROM cg.feed_comic fc
+        WHERE fc.is_latest = TRUE'
+        LOOP
+          INSERT INTO cg.feed_strip (feed_id, strip_id)
+            (
+              SELECT
+                rec.feed_id,
+                s.id
+              FROM cg.strip s
+              WHERE s.comic_id = rec.comic_id
+              AND s.number > (
+                SELECT s.number
+                FROM cg.feed_strip fs
+                  JOIN cg.strip s ON fs.strip_id = s.id
+                WHERE s.comic_id = rec.comic_id
+                ORDER BY s.number DESC
+                LIMIT 1
+              )
+            );
+        END LOOP;
+      END $$$$""").map(_ => 1)
+  }
+
+  /*
+   * Finds feed comics that have replay flag and the next datetime is before the start of the transaction. Inserts
+   * strips into feed strip for the next step above mark. Then updates mark += step and adds the interlude to next_at.
+   */
+  def replayFeedStrip: Future[Int] = {
+    db.run(sqlu"""
+      DO $$$$
+      DECLARE
+        rec cg.feed_comic%ROWTYPE;
+      BEGIN
+        FOR rec IN EXECUTE 'SELECT * FROM cg.feed_comic fc
+        WHERE fc.is_replay = TRUE AND next_at < CURRENT_TIMESTAMP'
+        LOOP
+          INSERT INTO cg.feed_strip (feed_id, strip_id) (
+            SELECT
+              rec.feed_id,
+              s.id
+            FROM cg.strip s
+            WHERE s.comic_id = rec.comic_id
+                  AND s.number > rec.mark AND s.number <= rec.mark + rec.step)
+          ON CONFLICT (feed_id, strip_id)
+            DO UPDATE SET (feed_id) = (rec.feed_id);
+
+          UPDATE cg.feed_comic
+          SET (mark, next_at) = (rec.mark + rec.step, rec.next_at + rec.interlude)
+          WHERE feed_id = rec.feed_id
+          AND comic_id = rec.comic_id;
+        END LOOP;
+      END $$$$""").map(_ => 1)
+  }
+
 }
 
 /**
@@ -276,11 +348,11 @@ object Lurker extends App with Conf with LazyLogging {
       Json.parse(Source.fromResource("comics.json").getLines().mkString))
     .get
 
-  /**
-    * Runs etl process for each comic concurrently.
-    * @param comics Vector[Comic] Comics to run etl on.
-    * @return
-    */
+  /*
+   * Runs etl process for each comic concurrently.
+   * @param comics Vector[Comic] Comics to run etl on.
+   * @return
+   */
   private def etl(comics: Vector[Comic]): Future[Vector[Boolean]] = {
     Future.sequence {
       for (comic <- comics)
@@ -298,11 +370,11 @@ object Lurker extends App with Conf with LazyLogging {
     }
   }
 
-  /**
-    * Starting point determines which page to start scraping with.
-    * @param comic Comic
-    * @return
-    */
+  /*
+   * Starting point determines which page to start scraping with.
+   * @param comic Comic
+   * @return
+   */
   private def startingPoint(comicInsert: Int,
                             comic: Comic): Future[(String, Int)] = {
     logger.info(s"Inserted $comicInsert comic id: ${comic.id}")
@@ -314,13 +386,13 @@ object Lurker extends App with Conf with LazyLogging {
     }
   }
 
-  /**
-    * extract
-    * @param startUrl String beginning url to be scraped.
-    * @param startCount Int Associated number of that strip.
-    * @param strategy patterns for scraping.
-    * @return Future List of Strip objects
-    */
+  /*
+   * extract
+   * @param startUrl String beginning url to be scraped.
+   * @param startCount Int Associated number of that strip.
+   * @param strategy patterns for scraping.
+   * @return Future List of Strip objects
+   */
   private def extract(startUrl: String,
                       startCount: Int,
                       strategy: Strategy): Future[Vector[Scrap]] = Future {
@@ -356,16 +428,16 @@ object Lurker extends App with Conf with LazyLogging {
     loop(Some(startUrl), startCount, Vector.empty[Scrap])
   }
 
-  /**
-    * Scrape function uses webdriver to render pages and extract desired
-    * information from the DOM.
-    * @param driver WebDriver using Selenium.
-    * @param url String location of content.
-    * @param count The comic strip number being tracked.
-    * @param strategy Strategy object containing xpath selectors.
-    * @return (Option[String], Scrap) an optional next url and the resultant
-    *         Scrap object.
-    */
+  /*
+   * Scrape function uses webdriver to render pages and extract desired
+   * information from the DOM.
+   * @param driver WebDriver using Selenium.
+   * @param url String location of content.
+   * @param count The comic strip number being tracked.
+   * @param strategy Strategy object containing xpath selectors.
+   * @return (Option[String], Scrap) an optional next url and the resultant
+   *         Scrap object.
+   */
   private def scrape(driver: WebDriver,
                      url: String,
                      count: Int,
@@ -431,12 +503,12 @@ object Lurker extends App with Conf with LazyLogging {
     (next, scrap)
   }
 
-  /**
-    * Transform, collect all strip information and do any image processing.
-    * @param comic Comic object for strip list.
-    * @param scraps Scrap Vector of results.
-    * @return
-    */
+  /*
+   * Transform, collect all strip information and do any image processing.
+   * @param comic Comic object for strip list.
+   * @param scraps Scrap Vector of results.
+   * @return
+   */
   private def transform(comic: Comic,
                         scraps: Vector[Scrap]): Future[Vector[Strip]] =
     Future {
@@ -448,11 +520,11 @@ object Lurker extends App with Conf with LazyLogging {
       }
     }
 
-  /**
-    * Calls repo to insert comic strips into database
-    * @param strips Vector[Strip]
-    * @return Vector of Int, indicating success of insert.
-    */
+  /*
+   * Calls repo to insert comic strips into database
+   * @param strips Vector[Strip]
+   * @return Vector of Int, indicating success of insert.
+   */
   private def load(strips: Vector[Strip]): Future[Vector[Int]] =
     Future.sequence(strips.map { strip =>
       logger.info(s"Inserting strip $strip")
@@ -462,6 +534,18 @@ object Lurker extends App with Conf with LazyLogging {
   // Launch etl process.
   // Await sequenced future results before shutting down.
   Await.result(etl(comics), Duration.Inf)
+
+  // Run Maintenance queries to iterate feeds and refresh views
+  val maintenance: Future[Int] = for {
+    refresh <- repo.refreshComicStripCount
+    replay <- repo.replayFeedStrip
+    latest <- repo.latestFeedStrip
+  } yield {
+    val successCount = refresh + replay + latest
+    logger.info(s"Ran $successCount maintenance queries.")
+    successCount
+  }
+  Await.result(maintenance, Duration.Inf)
   // Safely close database connection pool.
   repo.shutdown()
   // Exit successfully.
