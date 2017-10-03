@@ -10,17 +10,18 @@ import play.api.libs.json._
 import play.api.mvc._
 import play.db.NamedDatabase
 import slick.jdbc.{GetResult, JdbcProfile}
-import scala.concurrent.{ExecutionContext, Future}
 
+import scala.concurrent.{ExecutionContext, Future}
 import com.eclipsesource.schema.{SchemaType, SchemaValidator}
 import org.bson.types.ObjectId
-import play.api.Logger
+import play.api.{Configuration, Logger}
 
 /**
   * Web API for Comic Gator MVP
   */
 @Singleton
 class AxonController @Inject()(
+    config: Configuration,
     @NamedDatabase("cdb") protected val dbConfigProvider: DatabaseConfigProvider,
     cc: ControllerComponents
 )(implicit ec: ExecutionContext)
@@ -28,12 +29,15 @@ class AxonController @Inject()(
     with HasDatabaseConfigProvider[JdbcProfile] {
 
   import dbConfig.profile.api._
+
   implicit val getJsonResult: GetResult[JsValue] =
     GetResult(r => Json.parse(r.nextString))
   implicit val getObjectIdResult: GetResult[ObjectId] =
     GetResult(r => new ObjectId(r.nextString))
 
+  private val FEED_HOST = config.get[String]("feed_host")
   private val validator = SchemaValidator()
+
   def health: Action[AnyContent] = Action {
     implicit request: Request[AnyContent] =>
       Ok(Json.obj("status" -> "ok", "tagline" -> "as in web COMIC aggreGATOR"))
@@ -212,8 +216,8 @@ class AxonController @Inject()(
             Logger.info(s"Inserted $feedComicInsert feed.")
             NoContent
               .withHeaders(
-                ("Feed-Location",
-                 s"http://localhost:9000/feeds/${feedId.toString}"))
+                ("RSS-Feed-Location",
+                 s"$FEED_HOST/${feedId.toString}/rss.xml"))
         }
       }
     )
