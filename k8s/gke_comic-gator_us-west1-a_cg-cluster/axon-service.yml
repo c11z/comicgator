@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: maestro
+  name: axon
   labels:
     application: comic-gator
-    service: maestro
+    service: axon
     role: api
   namespace: default 
 spec:
@@ -13,5 +13,5 @@ spec:
       protocol: TCP
       targetPort: 9000
   selector:
-    service: maestro
+    service: axon
   type: NodePort

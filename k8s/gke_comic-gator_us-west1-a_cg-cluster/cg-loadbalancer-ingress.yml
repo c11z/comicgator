@@ -7,15 +7,15 @@ metadata:
     kubernetes.io/ingress.class: "gce"
 spec:
   rules:
-  - host: "comic-gator.com"
+  - host: "comicgator.com"
     http:
       paths:
       - backend:
           serviceName: morel 
           servicePort: 80
-  - host: "api.comic-gator.com"
+  - host: "api.comicgator.com"
     http:
       paths:
       - backend:
-          serviceName: maestro 
+          serviceName: axon
           servicePort: 80

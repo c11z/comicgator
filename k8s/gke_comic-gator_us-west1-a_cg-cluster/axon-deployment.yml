@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: maestro
+  name: axon
   namespace: default
 spec:
   replicas: 1
@@ -14,13 +14,13 @@ spec:
     metadata:
       labels:
         application: comic-gator
-        service: maestro
+        service: axon
         role: api
     spec:
       containers:
-        - image: us.gcr.io/comic-gator/maestro:latest
+        - image: us.gcr.io/comic-gator/axon:latest
           imagePullPolicy: Always
-          name: maestro
+          name: axon
           ports:
             - containerPort: 9000
               protocol: TCP
@@ -33,17 +33,18 @@ spec:
           #     memory: 1000m
           env:
             - name: APPLICATION_SECRET
-              value: 8Vz>klF16_mNUwYN1Mr@e^=vL37Ydj/kRT^808y18TCNm5DoY<wdz_hb9C[SKV<B
-            - name: COMIC_GATOR_HOSTNAME
-              value: http://api.comicgator.com
-            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: play-application-secret
+                  key: secret
+            - name: CDB_URL
               value: jdbc:postgresql://127.0.0.1:5432/cdb
-            - name: DATABASE_USER
+            - name: CDB_USER
               valueFrom:
                 secretKeyRef:
                   name: cloudsql-db-credentials
                   key: username
-            - name: DATABASE_PASSWORD
+            - name: CDB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: cloudsql-db-credentials
@@ -53,20 +54,26 @@ spec:
                 secretKeyRef:
                   name: mailgun-credentials
                   key: domain
-            - name: MAILGUN_API_KEY
+            - name: MAILGUN_KEY
               valueFrom:
                 secretKeyRef:
                   name: mailgun-credentials
                   key: key
-            - name: IS_LURKER
-              value: "false"
-            - name: IS_LINE_COOK
-              value: "false"
-            - name: JAVA_OPTIONS
-              value: "-Xmx2g"
+            - name: MAILGUN_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mailgun-credentials
+                  key: pubkey 
+            - name: FEED_HOST 
+              value: http://feed.comicgator.com 
+            # - name: JAVA_OPTIONS
+              # value: "-Xmx64M"
           volumeMounts:
             - name: mailgun-credentials
               mountPath: /etc/mailgun-credentials
+              readOnly: true
+            - name: play-application-secret
+              mountPath: /etc/play-application-secret
               readOnly: true
         # [START proxy_container]
         - image: gcr.io/cloudsql-docker/gce-proxy:1.09
@@ -95,6 +102,9 @@ spec:
         - name: mailgun-credentials
           secret:
             secretName: mailgun-credentials
+        - name: play-application-secret
+          secret:
+            secretName: play-application-secret
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-instance-credentials
