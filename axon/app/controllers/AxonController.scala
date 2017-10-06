@@ -15,6 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import com.eclipsesource.schema.{SchemaType, SchemaValidator}
 import org.bson.types.ObjectId
 import play.api.{Configuration, Logger}
+import utils.Name
 
 /**
   * Web API for Comic Gator MVP
@@ -40,7 +41,7 @@ class AxonController @Inject()(
 
   def health: Action[AnyContent] = Action {
     implicit request: Request[AnyContent] =>
-      Ok(Json.obj("status" -> "ok", "tagline" -> "as in web COMIC aggreGATOR"))
+      Ok(Json.obj("status" -> "ok", "tagline" -> "still running"))
   }
 
   /*
@@ -171,7 +172,7 @@ class AxonController @Inject()(
               RETURNING id""".as[ObjectId].head)
           feedId <- db.run(sql"""
               INSERT INTO cg.feed (geek_id, name)
-              VALUES (${geekId.toString}, 'Feed Name')
+              VALUES (${geekId.toString}, ${Name.generate})
               RETURNING id""".as[ObjectId].head)
           feedComicInsert <- db.run(sql"""
               INSERT INTO cg.feed_comic (
