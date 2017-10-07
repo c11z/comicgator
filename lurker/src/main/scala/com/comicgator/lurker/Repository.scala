@@ -18,9 +18,9 @@ object Repository extends Conf {
     r => Json.parse(r.nextString))
   implicit val getObjectIdResult: GetResult[ObjectId] = GetResult(
     r => new ObjectId(r.nextString))
-  implicit val getRSSResult: GetResult[RSS] = GetResult(
+  implicit val getRSSResult: GetResult[Item] = GetResult(
     r =>
-      RSS(
+      Item(
         new ObjectId(r.nextString),
         r.nextString,
         new ObjectId(r.nextString),
@@ -32,7 +32,7 @@ object Repository extends Conf {
         r.nextString,
         r.nextString,
         r.nextString,
-        LocalDateTime.parse(r.nextString)
+        r.nextTimestamp.toLocalDateTime
     )
   )
 
@@ -237,7 +237,7 @@ object Repository extends Conf {
       END $$$$""").map(_ => 1)
   }
 
-  def readyRSS()(implicit ec: ExecutionContext): Future[Vector[RSS]] = {
+  def readyFeeds()(implicit ec: ExecutionContext): Future[Vector[Item]] = {
     db.run(sql"""
       WITH
         ready_feeds AS (
@@ -265,6 +265,6 @@ object Repository extends Conf {
       LEFT JOIN cg.comic c ON s.comic_id = c.id
       WHERE fs.feed_id IN (SELECT feed_id FROM ready_feeds)
       AND fs.updated_at > (CURRENT_TIMESTAMP - INTERVAL '3 day')
-    """.as[RSS])
+    """.as[Item])
   }
 }

@@ -97,7 +97,7 @@ case class Scrap(number: Int,
                  isSpecial: Boolean)
 
 /**
-  * All data necessary to build RSS feeds.
+  * RSS Feed Item.
   * @param feedId ObjectId
   * @param feedName String
   * @param comicId ObjectId
@@ -111,18 +111,18 @@ case class Scrap(number: Int,
   * @param stripImageAlt String
   * @param feedStripUpdatedAt LocalDateTime
   */
-case class RSS(feedId: ObjectId,
-               feedName: String,
-               comicId: ObjectId,
-               comicTitle: String,
-               comicHostname: String,
-               comicCreator: String,
-               stripTitle: String,
-               stripNumber: Int,
-               stripUrl: String,
-               stripImageTitle: String,
-               stripImageAlt: String,
-               feedStripUpdatedAt: LocalDateTime) {
+case class Item(feedId: ObjectId,
+                feedName: String,
+                comicId: ObjectId,
+                comicTitle: String,
+                comicHostname: String,
+                comicCreator: String,
+                stripTitle: String,
+                stripNumber: Int,
+                stripUrl: String,
+                stripImageTitle: String,
+                stripImageAlt: String,
+                feedStripUpdatedAt: LocalDateTime) {
   val channelLink = "http://comicgator.com"
   val ttl = 60
   val webmaster = "mr@comicgator.com"

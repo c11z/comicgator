@@ -32,14 +32,24 @@ object Main extends App with Conf with LazyLogging {
   }
   Await.result(maintenance, Duration.Inf)
 
-  // Generate updated RSS feeds
-//  val storeFeeds = Repository.readyRSS.map { (rssV: Vector[RSS]) =>
-//    rssV.groupBy(rss => rss.feedId).foreach {
-//      case (feedId, rss) =>
-//        rss.foreach(r => Storage.putFeed(feedId, r.comicTitle))
-//    }
-//  }
-//  Await.result(storeFeeds, Duration.Inf)
+  // Generate updated RSS feeds and send to Google Storage
+  val feedSuccess: Future[Boolean] = {
+    Repository.readyFeeds.map { (allItems: Vector[Item]) =>
+      allItems
+        .groupBy(item => item.feedId)
+        .map {
+          case (feedId, items) =>
+            val feedXML = Syndication.makeFeed(items)
+            val blob = Storage.putFeed(feedId, feedXML)
+            logger.info(
+              s"http://$FEED_STORAGE_BUCKET/${feedId.toString}/rss.xml")
+            blob.exists()
+        }
+        .forall(identity)
+    }
+  }
+
+  Await.result(feedSuccess, Duration.Inf)
 
   // Safely close database connection pool.
   Repository.shutdown()
