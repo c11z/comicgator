@@ -54,9 +54,7 @@ class AxonController @Inject()(
       AS comics FROM (
         SELECT
           c.id,
-          c.hostname,
           c.title,
-          c.creator,
           csc.strip_count
         FROM cg.comic c
           LEFT JOIN cg.comic_strip_count csc ON c.id = csc.comic_id
@@ -127,11 +125,11 @@ class AxonController @Inject()(
       |      "type": "boolean"
       |    },
       |    "mark": {
-      |      "type": "integer",
+      |      "type": ["integer", "null"],
       |      "minimum": 1
       |    },
       |    "step": {
-      |      "type": "integer",
+      |      "type": ["integer", "null"],
       |      "minimum": 1,
       |      "maximum": 30
       |    }
