@@ -3,19 +3,23 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events exposing (..)
+import Http
+import Json.Decode as Decode
+import Json.Encode as Encode
 
 
 main : Program Never Model Msg
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+    Html.program
+        { init = init "http://localhost:9000"
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 
 -- MODEL
-
-
-type alias CGForm =
-    {}
 
 
 type alias Comic =
@@ -25,25 +29,36 @@ type alias Comic =
     }
 
 
-comics : List Comic
-comics =
-    [ Comic "1" "xkcd" 4356, Comic "2" "Saturday Morning Breakfast Cereal" 7694 ]
+type alias Feed =
+    { comicId : String
+    , email : String
+    , isLatest : Bool
+    , isReplay : Bool
+    , mark : Maybe Int
+    , step : Maybe Int
+    }
 
 
 type alias Model =
-    { email : String
+    { apiHost : String
+    , comics : List Comic
+
+    -- Form data
+    , email : String
+    , selectedComic : Maybe Comic
     , isLatest : Bool
     , isReplay : Bool
     , mark : String
     , step : String
     , isFormValid : Bool
-    , comics : List Comic
     }
 
 
-model : Model
-model =
-    Model "" False False "" "" False comics
+init : String -> ( Model, Cmd Msg )
+init apiHost =
+    ( Model apiHost [] "" Nothing False False "" "" False
+    , getComics apiHost
+    )
 
 
 
@@ -51,7 +66,9 @@ model =
 
 
 type Msg
-    = Email String
+    = SelectComic String
+    | NewComics (Result Http.Error (List Comic))
+    | Email String
     | Mark String
     | Step String
     | ToggleLatest
@@ -59,26 +76,39 @@ type Msg
     | Validate
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        SelectComic comicId ->
+            let
+                comic =
+                    List.head (List.filter (\c -> c.id == comicId) model.comics)
+            in
+                ( { model | selectedComic = comic }, Cmd.none )
+
+        NewComics (Ok newComics) ->
+            ( { model | comics = newComics }, Cmd.none )
+
+        NewComics (Err _) ->
+            ( model, Cmd.none )
+
         Email email ->
-            { model | email = email }
+            ( { model | email = email }, Cmd.none )
 
         ToggleLatest ->
-            { model | isLatest = not model.isLatest }
+            ( { model | isLatest = not model.isLatest }, Cmd.none )
 
         ToggleReplay ->
-            { model | isReplay = not model.isReplay }
+            ( { model | isReplay = not model.isReplay }, Cmd.none )
 
         Mark mark ->
-            { model | mark = mark }
+            ( { model | mark = mark }, Cmd.none )
 
         Step step ->
-            { model | step = step }
+            ( { model | step = step }, Cmd.none )
 
         Validate ->
-            model
+            ( model, Cmd.none )
 
 
 
@@ -119,16 +149,17 @@ view model =
                 , select
                     [ Attr.name "comic"
                     , Attr.class "w-100 w-80-ns ml3-ns"
+                    , onInput SelectComic
                     ]
-                    [ option
+                    ((option
                         [ Attr.value ""
                         , Attr.disabled True
                         , Attr.selected True
                         ]
                         [ text "Select a comic" ]
-                    , option [ Attr.value "xkcd" ] [ text "xkcd" ]
-                    , option [ Attr.value "smbc" ] [ text "Saturday Morning Breakfast Cereal" ]
-                    ]
+                     )
+                        :: (List.map comicOption model.comics)
+                    )
                 ]
             ]
         , div [ Attr.class "ma3" ]
@@ -167,7 +198,19 @@ view model =
                         , onInput Mark
                         ]
                         []
-                    , text ("/ " ++ "1000")
+                    , text
+                        ("/ "
+                            ++ let
+                                stripCount =
+                                    case model.selectedComic of
+                                        Just comic ->
+                                            toString comic.stripCount
+
+                                        Nothing ->
+                                            "XXXX"
+                               in
+                                stripCount
+                        )
                     ]
                 , div [ Attr.class "permanent-marker f6 f4-ns" ]
                     [ text "Deliver"
@@ -198,6 +241,11 @@ view model =
         ]
 
 
+comicOption : Comic -> Html msg
+comicOption comic =
+    option [ Attr.value comic.id ] [ text comic.title ]
+
+
 viewValidation : Model -> Html msg
 viewValidation model =
     let
@@ -214,3 +262,64 @@ viewValidation model =
                 ( "red", "Improbable!" )
     in
         div [ Attr.style [ ( "color", color ) ] ] [ text message ]
+
+
+
+-- Subscriptions
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- HTTP
+
+
+getComics : String -> Cmd Msg
+getComics apiHost =
+    let
+        url =
+            apiHost ++ "/comics"
+    in
+        Http.send NewComics (Http.get url decodeComics)
+
+
+decodeComics : Decode.Decoder (List Comic)
+decodeComics =
+    Decode.list
+        (Decode.map3 Comic
+            (Decode.field "id" Decode.string)
+            (Decode.field "title" Decode.string)
+            (Decode.field "strip_count" Decode.int)
+        )
+
+
+encodeFeed : Feed -> Encode.Value
+encodeFeed feed =
+    let
+        kv =
+            [ ( "email", Encode.string feed.email )
+            , ( "comic_id", Encode.string feed.comicId )
+            , ( "is_latest", Encode.bool feed.isLatest )
+            , ( "is_replay", Encode.bool feed.isReplay )
+            , ( "mark"
+              , case feed.mark of
+                    Just m ->
+                        Encode.int m
+
+                    Nothing ->
+                        Encode.null
+              )
+            , ( "step"
+              , case feed.step of
+                    Just s ->
+                        Encode.int s
+
+                    Nothing ->
+                        Encode.null
+              )
+            ]
+    in
+        kv |> Encode.object
