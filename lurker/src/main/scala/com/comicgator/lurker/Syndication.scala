@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 object Syndication extends Conf with LazyLogging {
   def makeFeed(items: Vector[Item]): String = {
     val sortedItems: Vector[Item] =
-      items.sortBy(- _.stripNumber)
+      items.sortBy(-_.stripNumber)
     val channel = sortedItems.head
     val title = s"${channel.comicTitle} RSS Feed by Comic Gator"
     (Vector(channelPrefix(title)) ++ sortedItems.map(channelItem) ++ Vector(

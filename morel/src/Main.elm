@@ -6,12 +6,13 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Dict
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
-        { init = init "http://localhost:9000"
+    Html.programWithFlags
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -20,6 +21,10 @@ main =
 
 
 -- MODEL
+
+
+type alias Flags =
+    { axonUrl : String }
 
 
 type alias Comic =
@@ -40,7 +45,7 @@ type alias Feed =
 
 
 type alias Model =
-    { apiHost : String
+    { axonUrl : String
     , comics : List Comic
 
     -- Form data
@@ -54,10 +59,10 @@ type alias Model =
     }
 
 
-init : String -> ( Model, Cmd Msg )
-init apiHost =
-    ( Model apiHost [] "" Nothing False False "" "" False
-    , getComics apiHost
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( Model flags.axonUrl [] "" Nothing False False "" "" False
+    , getComics flags.axonUrl
     )
 
 
@@ -67,6 +72,7 @@ init apiHost =
 
 type Msg
     = SelectComic String
+    | NewFeed (Result Http.Error String)
     | NewComics (Result Http.Error (List Comic))
     | Email String
     | Mark String
@@ -85,6 +91,12 @@ update msg model =
                     List.head (List.filter (\c -> c.id == comicId) model.comics)
             in
                 ( { model | selectedComic = comic }, Cmd.none )
+
+        NewFeed (Ok feedLocation) ->
+            ( model, Cmd.none )
+
+        NewFeed (Err _) ->
+            ( model, Cmd.none )
 
         NewComics (Ok newComics) ->
             ( { model | comics = newComics }, Cmd.none )
@@ -108,7 +120,22 @@ update msg model =
             ( { model | step = step }, Cmd.none )
 
         Validate ->
-            ( model, Cmd.none )
+            case model.selectedComic of
+                Just comic ->
+                    let
+                        feed =
+                            Feed
+                                comic.id
+                                model.email
+                                model.isLatest
+                                model.isReplay
+                                (String.toInt model.mark |> Result.toMaybe)
+                                (String.toInt model.step |> Result.toMaybe)
+                    in
+                        ( model, postFeed model.axonUrl feed )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 
@@ -195,21 +222,25 @@ view model =
                         , Attr.placeholder "1"
                         , Attr.value model.mark
                         , Attr.min "1"
+                        , Attr.max
+                            (case model.selectedComic of
+                                Just comic ->
+                                    toString comic.stripCount
+
+                                Nothing ->
+                                    "1"
+                            )
                         , onInput Mark
                         ]
                         []
                     , text
                         ("/ "
-                            ++ let
-                                stripCount =
-                                    case model.selectedComic of
-                                        Just comic ->
-                                            toString comic.stripCount
+                            ++ case model.selectedComic of
+                                Just comic ->
+                                    toString comic.stripCount
 
-                                        Nothing ->
-                                            "XXXX"
-                               in
-                                stripCount
+                                Nothing ->
+                                    "XXXX"
                         )
                     ]
                 , div [ Attr.class "permanent-marker f6 f4-ns" ]
@@ -232,6 +263,7 @@ view model =
         , div [ Attr.class "ma3 tc" ]
             [ a
                 [ Attr.class "permanent-marker f3 link pointer:hover shadow-hover br3 ba bw1 ph3 pv2 mb2 dib black"
+                , onClick Validate
                 ]
                 [ text "Submit"
                 ]
@@ -278,12 +310,41 @@ subscriptions model =
 
 
 getComics : String -> Cmd Msg
-getComics apiHost =
+getComics axonUrl =
     let
         url =
-            apiHost ++ "/comics"
+            axonUrl ++ "/comics"
     in
         Http.send NewComics (Http.get url decodeComics)
+
+
+postFeed : String -> Feed -> Cmd Msg
+postFeed axonUrl feed =
+    let
+        url =
+            axonUrl ++ "/feeds"
+
+        body =
+            Http.jsonBody (encodeFeed feed)
+
+        request =
+            Http.request
+                { method = "POST"
+                , url = url
+                , headers = []
+                , body = body
+                , expect = Http.expectStringResponse (extractHeader "RSS-Feed-Location")
+                , timeout = Nothing
+                , withCredentials = False
+                }
+    in
+        Http.send NewFeed request
+
+
+extractHeader : String -> Http.Response String -> Result String String
+extractHeader name resp =
+    Dict.get name resp.headers
+        |> Result.fromMaybe ("header " ++ name ++ " not found")
 
 
 decodeComics : Decode.Decoder (List Comic)
