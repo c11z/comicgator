@@ -6,10 +6,10 @@
 	revert_dir = revert
 	verify_dir = verify
 	extension = sql
-[target "dev"]
-	uri = db:pg://mrcg:mrcg@cdb:5432/cdb
+[target "local"]
+	uri = postgresql://mrcg:mrcg@localhost:5432/cdb
 [engine "pg"]
-	target = dev
+	target = local
 [deploy]
 	verify = true
 [rebase]
