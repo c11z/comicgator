@@ -13,4 +13,4 @@ integration:
 	curl --include \
 	--header 'Content-Type: application/json' \
 	--request POST 'http://localhost:9000/feeds' \
-	--data '{ "email": "corydominguez@gmail.com", "comic_id": "57341408de7af93a83733280", "is_latest": true, "is_replay": true, "mark": 1, "step": 10}'
+	--data '{ "email": "corydominguez@gmail.com", "comic_id": "57341408de7af93a83733280", "is_latest": true, "is_replay": false, "mark": null, "step": null}'
