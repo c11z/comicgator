@@ -4,4 +4,4 @@ CDB_PASSWORD=mrcg
 MAILGUN_DOMAIN=
 MAILGUN_KEY=
 MAILGUN_PUBLIC_KEY=
-FEED_HOST=http://localhost:9000
+FEED_URL=http://test.feed.comicgator.com

@@ -36,7 +36,7 @@ class AxonController @Inject()(
   implicit val getObjectIdResult: GetResult[ObjectId] =
     GetResult(r => new ObjectId(r.nextString))
 
-  private val FEED_HOST = config.get[String]("feed_host")
+  private val FEED_URL = config.get[String]("feed_url")
   private val validator = SchemaValidator()
 
   def health: Action[AnyContent] = Action {
@@ -216,7 +216,7 @@ class AxonController @Inject()(
             NoContent
               .withHeaders(
                 ("RSS-Feed-Location",
-                 s"$FEED_HOST/${feedId.toString}/rss.xml"))
+                 s"$FEED_URL/${feedId.toString}/rss.xml"))
         }
       }
     )
