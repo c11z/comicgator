@@ -1,6 +1,5 @@
 package com.comicgator.lurker
 
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 import org.bson.types.ObjectId
@@ -56,39 +55,23 @@ object Repository extends Conf {
         hostname,
         title,
         creator,
-        is_advertised,
-        patreon_url,
-        store_url,
-        banner_image,
         first_url)
       VALUES (
         ${comic.id.toString},
         ${comic.hostname},
         ${comic.title},
         ${comic.creator},
-        ${comic.isAdvertised.toString}::BOOLEAN,
-        ${comic.patreonUrl}::TEXT,
-        ${comic.store_url}::TEXT,
-        ${comic.bannerImage},
         ${comic.firstUrl})
       ON CONFLICT (id) DO UPDATE SET (
         id,
         hostname,
         title,
         creator,
-        is_advertised,
-        patreon_url,
-        store_url,
-        banner_image,
         first_url) = (
         ${comic.id.toString},
         ${comic.hostname},
         ${comic.title},
         ${comic.creator},
-        ${comic.isAdvertised.toString}::BOOLEAN,
-        ${comic.patreonUrl}::TEXT,
-        ${comic.store_url}::TEXT,
-        ${comic.bannerImage},
         ${comic.firstUrl})""".as[Int].head)
   }
 
@@ -165,13 +148,6 @@ object Repository extends Conf {
         case None => (firstUrl, 1)
       }
   }
-
-  /*
-   * Calls refresh on view that counts the number of strips each comic has.
-   */
-  def refreshComicStripCount()(implicit ec: ExecutionContext): Future[Int] =
-    db.run(sqlu"""REFRESH MATERIALIZED VIEW cg.comic_strip_count""")
-      .map(_ => 1)
 
   /*
    * Finds feed comics flagged as latest. For each feed comic finds the highest feed strip number, then inserts

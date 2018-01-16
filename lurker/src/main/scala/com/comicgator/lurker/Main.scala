@@ -22,11 +22,10 @@ object Main extends App with Conf with LazyLogging {
 
   // Run Maintenance queries to iterate feeds and refresh views
   val maintenance: Future[Int] = for {
-    refresh <- Repository.refreshComicStripCount
     replay <- Repository.replayFeedStrip
     latest <- Repository.latestFeedStrip
   } yield {
-    val successCount = refresh + replay + latest
+    val successCount = replay + latest
     logger.info(s"Ran $successCount maintenance queries.")
     successCount
   }

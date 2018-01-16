@@ -4,4 +4,4 @@ CDB_PASSWORD=mrcg
 ETL_BATCH_SIZE=10
 IS_DELTA=true
 FEED_STORAGE_BUCKET=test.feed.comicgator.com
-GOOGLE_APPLICATION_CREDENTIALS=/home/c11z/Projects/comicgator/k8s/keys/feed-storage-credentials.json
+GOOGLE_APPLICATION_CREDENTIALS=/home/c11z/src/github.com/c11z/comicgator/lurker/feed-storage-credentials.json
