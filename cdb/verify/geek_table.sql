@@ -2,7 +2,7 @@
 
 BEGIN;
 
-SELECT id, email, is_receptive, created_at, updated_at
+SELECT id, email, created_at, updated_at
 FROM cg.geek
 WHERE FALSE;
 
