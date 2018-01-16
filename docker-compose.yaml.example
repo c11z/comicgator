@@ -1,0 +1,28 @@
+version: '2'
+services:
+  lurker:
+    container_name: lurker
+    image: luker:0.3-SNAPSHOT
+    ports:
+      - "5005:5005"
+    environment:
+      - CDB_URL=jdbc:postgresql://cdb:5432/cdb
+      - CDB_USER=mrcg
+      - CDB_PASSWORD=mrcg
+      - ETL_BATCH_SIZE=10
+      - IS_DELTA=true
+      - FEED_STORAGE_BUCKET=test.feed.comicgator.com
+      - GOOGLE_APPLICATION_CREDENTIALS=/path/to/feed-storage-credentials.json
+    tty: true
+    links:
+      - cdb
+  cdb:
+    container_name: cdb
+    image: postgres:9.6
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=mrcg
+      - POSTGRES_PASSWORD=mrcg
+      - POSTGRES_DB=cdb
+      - PGDATA=/var/lib/postgresql/data
