@@ -1,5 +1,5 @@
 *.class
 *.log
 docker-compose.yml
-k8s/keys
 .vscode
+keys

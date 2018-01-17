@@ -23,6 +23,7 @@ sleep-10:
 psql:
 	PGOPTIONS=--search_path=cg \
 	psql \
+	--expanded \
 	--host localhost \
 	--port 5432 \
 	--username mrcg \
