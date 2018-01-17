@@ -30,3 +30,5 @@ services:
       - POSTGRES_PASSWORD=mrcg
       - POSTGRES_DB=cdb
       - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - ./db/comicdata:/var/lib/postgresql/data
