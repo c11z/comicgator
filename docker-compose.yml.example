@@ -1,8 +1,8 @@
-version: '2'
+version: '3'
 services:
   lurker:
     container_name: lurker
-    image: luker:0.3-SNAPSHOT
+    image: lurker:0.3.4-SNAPSHOT
     ports:
       - "5005:5005"
     environment:
@@ -12,8 +12,12 @@ services:
       - ETL_BATCH_SIZE=10
       - IS_DELTA=true
       - FEED_STORAGE_BUCKET=test.feed.comicgator.com
-      - GOOGLE_APPLICATION_CREDENTIALS=/path/to/feed-storage-credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/var/lib/keys/feed-storage-credentials.json
     tty: true
+    volumes:
+      - ./keys:/var/lib/keys
+    depends_on:
+      - cdb
     links:
       - cdb
   cdb:

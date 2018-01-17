@@ -8,4 +8,4 @@ target
 /RUNNING_PID
 /.localenv
 /.gcloudenv
-feed-storage-credentials.json
+keys/
