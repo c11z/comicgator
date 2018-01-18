@@ -10,9 +10,10 @@ cdb:
 	--name cdb \
 	--publish 5432:5432 \
 	--env POSTGRES_USER=mrcg \
-    --env POSTGRES_PASSWORD=mrcg \
-    --env POSTGRES_DB=cdb \
-    --env PGDATA=/var/lib/postgresql/data \
+	--env POSTGRES_PASSWORD=mrcg \
+	--env POSTGRES_DB=cdb \
+	--env PGDATA=/var/lib/postgresql/data \
+	--volume /home/c11z/src/github.com/c11z/comicgator/db/comicdata:/var/lib/postgresql/data \
 	$(TARGET_POSTGRES)
 
 .PHONY: sleep-10

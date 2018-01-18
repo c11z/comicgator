@@ -2,7 +2,7 @@ version: '3'
 services:
   lurker:
     container_name: lurker
-    image: lurker:0.3.4-SNAPSHOT
+    image: lurker:0.0.0
     ports:
       - "5005:5005"
     environment:
@@ -13,6 +13,8 @@ services:
       - IS_DELTA=true
       - FEED_STORAGE_BUCKET=test.feed.comicgator.com
       - GOOGLE_APPLICATION_CREDENTIALS=/var/lib/keys/feed-storage-credentials.json
+      - LOG_LEVEL=info
+      - INTERLUDE=30000
     tty: true
     volumes:
       - ./keys:/var/lib/keys
@@ -20,6 +22,10 @@ services:
       - cdb
     links:
       - cdb
+    logging:
+      options:
+        max-size: "500k"
+        max-file: "1"
   cdb:
     container_name: cdb
     image: postgres:9.6
@@ -32,3 +38,7 @@ services:
       - PGDATA=/var/lib/postgresql/data
     volumes:
       - ./db/comicdata:/var/lib/postgresql/data
+    logging:
+      options:
+        max-size: "500k"
+        max-file: "1"

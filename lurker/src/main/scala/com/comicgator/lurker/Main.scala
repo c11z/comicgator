@@ -1,5 +1,8 @@
 package com.comicgator.lurker
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter.ISO_DATE_TIME
+
 import com.typesafe.scalalogging.LazyLogging
 import play.api.libs.json.Json
 
@@ -10,10 +13,18 @@ import scala.io.Source
 object Main extends App with Conf with LazyLogging {
   // Use single execution context for future sync.
   implicit val ec: ExecutionContext = ExecutionContext.global
-  logger.info("Waiting on you to initialize the database...")
-  Thread.sleep(7 * 60 * 1000) // 7 minutes
+  sys.ShutdownHookThread {
+    // Safely close database connection pool.
+    logger.info("Shutting down repository.")
+    Repository.shutdown()
+    // Exit successfully.
+    logger.info("Exit.")
+    sys.exit(0)
+  }
 
   while (true) {
+    val init = LocalDateTime.now()
+    logger.info(s"init: ${init.format(ISO_DATE_TIME)}")
     // Load comic configuration from json file.
     val comics: Vector[Comic] =
       Json
@@ -38,7 +49,7 @@ object Main extends App with Conf with LazyLogging {
 
     // Generate updated RSS feeds and send to Google Storage
     val feedSuccess: Future[Boolean] = {
-      Repository.readyFeeds.map { (allItems: Vector[Item]) =>
+      Repository.readyFeeds(init).map { (allItems: Vector[Item]) =>
         allItems
           .groupBy(item => item.feedId)
           .map {
@@ -54,11 +65,7 @@ object Main extends App with Conf with LazyLogging {
     }
 
     Await.result(feedSuccess, Duration.Inf)
-    logger.info("Finished Loop")
-    Thread.sleep(10 * 60 * 1000) // 10 minutes
+    logger.info(s"ETL complete, sleeping for $INTERLUDE ms.")
+    Thread.sleep(INTERLUDE)
   }
-  // Safely close database connection pool.
-  Repository.shutdown()
-  // Exit successfully.
-  sys.exit(0)
 }

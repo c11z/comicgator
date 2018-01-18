@@ -1,5 +1,6 @@
 package com.comicgator.lurker
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 import org.bson.types.ObjectId
@@ -213,14 +214,13 @@ object Repository extends Conf {
       END $$$$""").map(_ => 1)
   }
 
-  def readyFeeds()(implicit ec: ExecutionContext): Future[Vector[Item]] = {
+  def readyFeeds(init: LocalDateTime)(implicit ec: ExecutionContext): Future[Vector[Item]] = {
     db.run(sql"""
       WITH
         ready_feeds AS (
           SELECT DISTINCT fs.feed_id
           FROM cg.feed_strip fs
-          WHERE fs.updated_at > ${INIT_DATETIME
-      .format(ISO_DATE_TIME)}::TIMESTAMP
+          WHERE fs.updated_at > ${init.format(ISO_DATE_TIME)}::TIMESTAMP
         )
       SELECT
         f.id,

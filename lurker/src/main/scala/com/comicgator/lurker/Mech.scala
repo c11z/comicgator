@@ -43,7 +43,7 @@ object Mech extends Conf with LazyLogging {
    */
   private def startingPoint(comicInsert: Int, comic: Comic)(
       implicit ec: ExecutionContext): Future[(String, Int)] = {
-    logger.info(s"Inserted $comicInsert comic id: ${comic.id}")
+    if (comicInsert == 1) logger.debug(s"${comic.id} inserted successfully")
     logger.info(s"Starting comic: ${comic.title}")
     if (IS_DELTA) {
       Repository.lastStrip(comic.id, comic.firstUrl)
@@ -86,7 +86,6 @@ object Mech extends Conf with LazyLogging {
             scraps :+ scrap
           }
         case None =>
-          logger.info("Lurk Accomplished")
           scraps
       }
     }
@@ -172,7 +171,7 @@ object Mech extends Conf with LazyLogging {
                       imageAlt,
                       bonusImage,
                       isSpecial)
-    logger.info(s"Obtained scrap: $scrap")
+    logger.debug(s"Scraped Scrap: $scrap")
     (next, scrap)
   }
 
@@ -188,7 +187,7 @@ object Mech extends Conf with LazyLogging {
       scraps.map { scrap =>
         // TODO: Generate thumbnail and other potential post processing
         val strip = Strip(ObjectId.get, comic.id, "", scrap)
-        logger.info(s"Successfully transformed strip: $strip")
+        logger.debug(s"Transformed strip: $strip")
         strip
       }
     }
@@ -201,7 +200,7 @@ object Mech extends Conf with LazyLogging {
   private def load(strips: Vector[Strip])(
       implicit ec: ExecutionContext): Future[Vector[Int]] =
     Future.sequence(strips.map { strip =>
-      logger.info(s"Inserting strip $strip")
+      logger.debug(s"Inserting strip ${strip.scrap.url}")
       Repository.insertStrip(strip)
     })
 }

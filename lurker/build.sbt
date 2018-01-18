@@ -1,7 +1,7 @@
 name := "lurker"
 
 scalaVersion := "2.12.3"
-version := "0.3.4-SNAPSHOT"
+version := "0.3.5-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, DockerPlugin)
 
