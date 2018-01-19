@@ -1,1 +1,3 @@
 sqitch.conf
+.pgpass
+cdb

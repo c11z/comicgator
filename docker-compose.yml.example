@@ -2,7 +2,7 @@ version: '3'
 services:
   lurker:
     container_name: lurker
-    image: comicgator/lurker:0.0.0
+    image: comicgator/lurker:latest
     ports:
       - "5005:5005"
     environment:

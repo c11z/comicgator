@@ -1,9 +1,10 @@
 name := "lurker"
 
 scalaVersion := "2.12.3"
-version := "0.4.1-SNAPSHOT"
+version := "0.4.1"
 
 packageName in Docker := "comicgator/lurker"
+dockerUpdateLatest := true
 
 lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, DockerPlugin)
 
