@@ -4,10 +4,6 @@
     "hostname": "xkcd.com",
     "title": "XKCD",
     "creator": "Randall Monroe",
-    "is_advertised": false,
-    "patreon_url": null,
-    "store_url": "http://store.xkcd.com/",
-    "banner_image": "",
     "first_url": "http://xkcd.com/1/",
     "strategy": {
       "next": ["//*[@id=\"middleContainer\"]/ul/li/a[@rel=\"next\"]"],
@@ -29,10 +25,6 @@
     "hostname": "smbc-comics.com",
     "title": "Saturday Morning Breakfast Cereal",
     "creator": "Zach Weinersmith",
-    "is_advertised": true,
-    "patreon_url": "https://www.patreon.com/ZachWeinersmith",
-    "store_url": "http://hivemill.com/collections/smbc",
-    "banner_image": "",
     "first_url": "http://www.smbc-comics.com/comic/2002-09-05",
     "strategy": {
       "next": ["//*[@id=\"navtop\"]/div/a[@class=\"next\"]"],
@@ -48,10 +40,6 @@
     "hostname": "abstrusegoose.com",
     "title": "Abstruse Goose",
     "creator": "The Powerful and Evil Abstruse Goose Corporation",
-    "is_advertised": true,
-    "patreon_url": null,
-    "store_url": "http://www.cafepress.com/abstrusegoose",
-    "banner_image": "",
     "first_url": "http://abstrusegoose.com/1",
     "strategy": {
       "next": ["/html/body/section/p[1]/a[starts-with(.,'Next')]"],
@@ -59,6 +47,21 @@
       "title": ["/html/body/section/h1/a"],
       "image_title": ["/html/body/section/img"],
       "image_alt": ["/html/body/section/img"],
+      "bonus_image": null
+    }
+  },
+  {
+    "id": "5a618bf2ac2eef0150fc8fd5",
+    "hostname": "www.lfg.co",
+    "title": "Looking For Group",
+    "creator": "Ryan Sohmer",
+    "first_url": "http://www.lfg.co/page/1/",
+    "strategy": {
+      "next": ["//*[@id=\"comic-right\"]/a"],
+      "image": ["//*[@id=\"comic\"]/img"],
+      "title": ["/html/head/title"],
+      "image_title": ["//*[@id=\"comic\"]/img"],
+      "image_alt": ["//*[@id=\"comic\"]/img"],
       "bonus_image": null
     }
   }
