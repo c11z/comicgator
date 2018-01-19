@@ -1,7 +1,9 @@
 name := "lurker"
 
 scalaVersion := "2.12.3"
-version := "0.3.5-SNAPSHOT"
+version := "0.4.1-SNAPSHOT"
+
+packageName in Docker := "comicgator/lurker"
 
 lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, DockerPlugin)
 
@@ -13,6 +15,7 @@ libraryDependencies ++= Seq(
   "org.seleniumhq.selenium" % "htmlunit-driver" % "2.29.0",
   "org.postgresql" % "postgresql" % "42.1.4",
   "org.mongodb" % "bson" % "3.6.1",
+  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.google.cloud" % "google-cloud-storage" % "1.14.0"

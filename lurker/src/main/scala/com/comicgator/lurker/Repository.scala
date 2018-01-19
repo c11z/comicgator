@@ -32,6 +32,8 @@ object Repository extends Conf {
         r.nextString,
         r.nextString,
         r.nextString,
+        r.nextString,
+        r.nextString,
         r.nextTimestamp.toLocalDateTime
     )
   )
@@ -232,6 +234,8 @@ object Repository extends Conf {
         s.title,
         s.number,
         s.url,
+        s.image_urls[1],
+        s.bonus_image_url,
         s.image_title,
         s.image_alt,
         fs.updated_at

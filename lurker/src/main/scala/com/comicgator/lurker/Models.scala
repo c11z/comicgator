@@ -98,6 +98,8 @@ case class Scrap(number: Int,
   * @param stripTitle String
   * @param stripNumber Int
   * @param stripUrl String
+  * @param stripImageUrl String
+  * @param stripBonusImageUrl String
   * @param stripImageTitle String
   * @param stripImageAlt String
   * @param feedStripUpdatedAt LocalDateTime
@@ -111,6 +113,8 @@ case class Item(feedId: ObjectId,
                 stripTitle: String,
                 stripNumber: Int,
                 stripUrl: String,
+                stripImageUrl: String,
+                stripBonusImageUrl: String,
                 stripImageTitle: String,
                 stripImageAlt: String,
                 feedStripUpdatedAt: LocalDateTime) {
