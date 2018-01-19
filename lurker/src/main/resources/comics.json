@@ -64,5 +64,20 @@
       "image_alt": ["//*[@id=\"comic\"]/img"],
       "bonus_image": null
     }
+  },
+  {
+    "id": "5a61a03e6b6f69020527a7b4",
+    "hostname": "oglaf.com",
+    "title": "Oglaf",
+    "creator": "Trudy Cooper",
+    "first_url": "https://oglaf.com/cumsprite/",
+    "strategy": {
+      "next": ["//*[@id=\"nx\"]/parent::a"],
+      "image": ["//*[@id=\"strip\"]"],
+      "title": ["/html/head/title"],
+      "image_title": ["//*[@id=\"strip\"]"],
+      "image_alt": ["//*[@id=\"strip\"]"],
+      "bonus_image": null
+    }
   }
 ]
