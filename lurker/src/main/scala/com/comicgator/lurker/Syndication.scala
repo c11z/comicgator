@@ -36,20 +36,21 @@ object Syndication extends Conf with LazyLogging {
       .atZone(ZoneId.of("UTC"))
       .format(DateTimeFormatter.RFC_1123_DATE_TIME)
     val br = xml.Utility.escape("<br>")
+    val header = xml.Utility.escape(s"<p>${item.comicTitle} (${item.stripNumber})</p>")
     val mainImage = xml.Utility.escape(s"""<img src=\"${item.stripImageUrl}\" />""")
     val mouseOver = if (item.stripImageTitle.isEmpty && item.stripImageAlt.isEmpty) {
       ""
-    } else if (item.stripImageTitle.isEmpty) {
-      xml.Utility.escape(s"""<blockquote>${item.stripImageAlt}</blockquote>""")
+    } else if (item.stripImageTitle.isDefined) {
+      xml.Utility.escape(s"""<blockquote>${item.stripImageTitle.get}</blockquote>""")
     } else {
-      xml.Utility.escape(s"""<blockquote>${item.stripImageTitle}</blockquote>""")
+      xml.Utility.escape(s"""<blockquote>${item.stripImageAlt.get}</blockquote>""")
     }
     val bonusImage = if (item.stripBonusImageUrl.isEmpty) {
       ""
     } else {
-      xml.Utility.escape(s"""<img src=\"${item.stripBonusImageUrl}\" />""")
+      xml.Utility.escape(s"""<img src=\"${item.stripBonusImageUrl.get}\" />""")
     }
-    val description = mainImage + br + mouseOver + br + bonusImage
+    val description = header + br + mainImage + br + mouseOver + br + bonusImage
     s"""        <item>
        |            <title>${item.stripTitle}</title>
        |            <link>${item.stripUrl}</link>

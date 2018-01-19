@@ -155,12 +155,29 @@ object Mech extends Conf with LazyLogging {
     val title = judge(strategy.title, webElement => Option(webElement.getText))
     val bonusImage = judge(
       strategy.bonusImage,
-      webElement => Option(webElement.getAttribute("src")))
+      webElement => {
+        webElement.getAttribute("src") match {
+          case null => None
+          case "" => None
+          case s: String => Some(s)
+        }
+      })
     val imageTitle = judge(
       strategy.imageTitle,
-      webElement => Option(webElement.getAttribute("title")))
-    val imageAlt = judge(strategy.imageAlt,
-                         webElement => Option(webElement.getAttribute("alt")))
+      webElement => {
+        webElement.getAttribute("title") match {
+          case null => None
+          case "" => None
+          case s: String => Some(s)
+        }
+      })
+    val imageAlt = judge(
+      strategy.imageAlt,
+      webElement => webElement.getAttribute("alt") match {
+        case null => None
+        case "" => None
+        case s: String => Some(s)
+      })
 
     val scrap = Scrap(count,
                       checksum,

@@ -99,9 +99,9 @@ case class Scrap(number: Int,
   * @param stripNumber Int
   * @param stripUrl String
   * @param stripImageUrl String
-  * @param stripBonusImageUrl String
-  * @param stripImageTitle String
-  * @param stripImageAlt String
+  * @param stripBonusImageUrl Option[String]
+  * @param stripImageTitle Option[String]
+  * @param stripImageAlt Option[String]
   * @param feedStripUpdatedAt LocalDateTime
   */
 case class Item(feedId: ObjectId,
@@ -114,9 +114,9 @@ case class Item(feedId: ObjectId,
                 stripNumber: Int,
                 stripUrl: String,
                 stripImageUrl: String,
-                stripBonusImageUrl: String,
-                stripImageTitle: String,
-                stripImageAlt: String,
+                stripBonusImageUrl: Option[String],
+                stripImageTitle: Option[String],
+                stripImageAlt: Option[String],
                 feedStripUpdatedAt: LocalDateTime) {
   val channelLink = "http://comicgator.com"
   val ttl = 60

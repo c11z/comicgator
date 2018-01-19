@@ -1,7 +1,7 @@
 .PHONY: deploy
-deploy: docker push pullup
+deploy: publishlocal push pullup
 
-docker: lurker
+publishlocal: lurker
 	$(MAKE) docker -C lurker
 
 .PHONY: push
@@ -14,7 +14,7 @@ pullup:
 
 .PHONY: logs
 logs:
-	ssh -t root@comicgator.com 'docker-compose logs -f'
+	ssh -t root@comicgator.com 'COMPOSE_HTTP_TIMEOUT=600 docker-compose logs -f'
 
 .PHONY: cdb
 cdb:

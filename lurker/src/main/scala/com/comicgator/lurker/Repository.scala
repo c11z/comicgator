@@ -31,9 +31,9 @@ object Repository extends Conf {
         r.nextInt,
         r.nextString,
         r.nextString,
-        r.nextString,
-        r.nextString,
-        r.nextString,
+        r.nextStringOption,
+        r.nextStringOption,
+        r.nextStringOption,
         r.nextTimestamp.toLocalDateTime
     )
   )
