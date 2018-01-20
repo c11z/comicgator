@@ -8,10 +8,19 @@ import com.typesafe.scalalogging.LazyLogging
 object Syndication extends Conf with LazyLogging {
   def makeFeed(items: Vector[Item]): String = {
     val sortedItems: Vector[Item] =
-      items.sortBy(-_.stripNumber)
+      items.sortBy(i => (i.comicId, -i.stripNumber))
     val channel: Item = sortedItems.head
-    (Vector(channelPrefix(channel)) ++ sortedItems.map(channelItem) ++ Vector(
-      channelPostfix)).mkString("\n")
+    // When feed_strips are inserted they often are batched and have updated_at timestamps indistinguishable at the
+    // second precision. When feed_strip's are combined with context and extracted as Items, we use the updated_at as a
+    // timestamp for the RFC_1123 pubDate tag. This results in a bunch of Items with the exact same pubDate, which
+    // means that time based sorts are useless. Including an index in the map we can use it to add an accumulated amount
+    // of seconds to each Item. This has the negative result of slightly adjusting the pubDate each time the feed is
+    // generated but I think this will be ignored since most readers rely on the guid tag for uniqueness.
+    (
+      Vector(channelPrefix(channel))
+      ++ sortedItems.zipWithIndex.map { case (item, index) => channelItem(item, index) }
+      ++ Vector(channelPostfix)
+    ).mkString("\n")
   }
 
   private def channelPrefix(channel: Item): String = {
@@ -31,10 +40,9 @@ object Syndication extends Conf with LazyLogging {
       |</rss>
       |""".stripMargin
 
-  private def channelItem(item: Item): String = {
-    val pubDate = item.feedStripUpdatedAt
-      .atZone(ZoneId.of("UTC"))
-      .format(DateTimeFormatter.RFC_1123_DATE_TIME)
+  private def channelItem(item: Item, index: Int): String = {
+    val pubDate =
+      item.feedStripUpdatedAt.minusSeconds(index).atZone(ZoneId.of("UTC")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
     val br = xml.Utility.escape("<br>")
     val header = xml.Utility.escape(s"<p>${item.comicTitle} (${item.stripNumber})</p>")
     val mainImage = xml.Utility.escape(s"""<img src=\"${item.stripImageUrl}\" />""")
