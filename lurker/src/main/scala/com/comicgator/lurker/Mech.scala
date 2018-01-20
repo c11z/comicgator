@@ -1,6 +1,7 @@
 package com.comicgator.lurker
 
 import java.security.MessageDigest
+import java.util.logging.{Level, Logger}
 
 import com.typesafe.scalalogging.LazyLogging
 import org.bson.types.ObjectId
@@ -13,6 +14,9 @@ import scala.util.Random
 import scala.collection.JavaConverters._
 
 object Mech extends Conf with LazyLogging {
+
+  Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF)
+
   /*
    * Runs etl process for each comic concurrently.
    * @param comics Vector[Comic] Comics to run etl on.
@@ -30,7 +34,7 @@ object Mech extends Conf with LazyLogging {
             strips <- transform(comic, scraps)
             stripInsert <- load(strips)
           } yield {
-            logger.info(s"Inserted ${stripInsert.sum} comic strips")
+            logger.info(s"Inserted ${stripInsert.sum} ${comic.title} strips")
             true
           }
     }

@@ -1,7 +1,7 @@
 name := "lurker"
 
 scalaVersion := "2.12.3"
-version := "0.4.5"
+version := "0.5.0"
 
 packageName in Docker := "comicgator/lurker"
 dockerUpdateLatest := true
@@ -9,6 +9,8 @@ dockerUpdateLatest := true
 lazy val root = (project in file(".")).enablePlugins(JavaAppPackaging, DockerPlugin)
 
 libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-http"   % "10.1.0-RC1",
+  "com.typesafe.akka" %% "akka-stream" % "2.5.8",
   "com.typesafe.play" %% "play-json" % "2.6.8",
   "com.typesafe.slick" %% "slick" % "3.2.1",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
