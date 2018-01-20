@@ -14,7 +14,7 @@ import scala.util.Random
 import scala.collection.JavaConverters._
 
 object Mech extends Conf with LazyLogging {
-
+  // Turn off CSS error noise from HtmlUnit
   Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF)
 
   /*

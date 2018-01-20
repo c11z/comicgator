@@ -77,7 +77,8 @@ object Main extends Conf with LazyLogging {
       }
     }  catch {
       case ex: Throwable =>
-        logger.error(ex.toString)
+        logger.error(ex.getMessage)
+        ex.printStackTrace()
         shutdown()
     }
   }
