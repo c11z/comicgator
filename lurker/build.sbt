@@ -1,7 +1,7 @@
 name := "lurker"
 
 scalaVersion := "2.12.3"
-version := "0.5.0"
+version := "0.5.2"
 
 packageName in Docker := "comicgator/lurker"
 dockerUpdateLatest := true
